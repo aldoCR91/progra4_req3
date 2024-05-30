@@ -66,12 +66,94 @@ def create_delete_view(app_bar, menubar):
         ],
     )
 
-def create_detail_view(app_bar, menubar):
-    return ft.View(
-        "/detail",
-        [
-            app_bar,
-            ft.Row([menubar]),
-            ft.Text("Detalle de la depreciacion del activo"),
-        ],
-    )
+def create_detail_view(app_bar, menubar, data, identificador):
+    # Buscar activo
+    activo = True #next((item for item in activos if item["identificador"] == identificador), None)
+    
+    identificador = int(identificador)
+    data = data[identificador]
+    
+    nombre = data['nombre']
+    responsable = data['responsable']
+    valor = int(data['valor'])
+    valor_res = int(data['valor_res'])
+    vida_util = int(data['vida_util'])
+    
+    #Tabla de linea recta
+    columns=[
+        ft.DataColumn(ft.Text("Periodo")),
+        ft.DataColumn(ft.Text("Valor a depreciar")),
+        ft.DataColumn(ft.Text("Factor")),
+        ft.DataColumn(ft.Text("Depreciacion anual")),
+        ft.DataColumn(ft.Text("Depreciacion acumulada")),
+        ft.DataColumn(ft.Text("Valor en libros")),
+    ]
+    rows = []
+    i = 0
+    
+    while i <= int(data['vida_util']):
+        if i != len(data):
+            row = ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(f"{i}")),
+                    ft.DataCell(ft.Text(f"{valor - valor_res}")),
+                    ft.DataCell(ft.Text(f"{(100 / vida_util):.2f}%")),
+                    ft.DataCell(ft.Text(f"{(valor - valor_res)*(0.1)}")),
+                    ft.DataCell(ft.Text(f"{i * ( (valor - valor_res)/10)}")),
+                    ft.DataCell(ft.Text( (valor - valor_res) - (i * (valor - valor_res)) )),
+                ]
+            )
+        if i == len(data):
+            row = ft.DataRow(
+            cells=[
+                ft.DataCell(ft.Text(f"{i}")),
+                ft.DataCell(ft.Text(f"{valor - valor_res}")),
+                ft.DataCell(ft.Text(f"{vida_util}%")),
+                ft.DataCell(ft.Text(f"{(valor - valor_res)*(0.1)}")),
+                ft.DataCell(ft.Text(f"{i * (valor - valor_res)}")),
+                ft.DataCell(ft.Text(f"0")),
+            ]
+        )
+        rows.append(row)
+        i = i + 1
+        
+    
+    
+    
+    
+    
+    
+    
+    if activo:
+        return ft.View(
+            "/detail",
+            [
+                app_bar,
+                ft.Row([menubar]),
+                ft.Text(f"Edwards LTDA", size=14, weight=ft.FontWeight.BOLD),
+                ft.Text("Depreciacion Linea Recta", size=14, weight=ft.FontWeight.BOLD),
+                ft.Divider(),
+                ft.Text(f"{nombre}:              {valor}"),
+                ft.Text(f"Valor de rescate:     {valor_res}"),
+                ft.Text(f"Vida util:            {vida_util}"),
+                ft.Divider(),
+                ft.DataTable(
+                    columns=columns,
+                    rows=rows
+                ),
+                ft.Divider()
+                
+                
+                
+                
+            ],
+        )
+    else:
+        return ft.View(
+            "/detail",
+            [
+                app_bar,
+                ft.Row([menubar]),
+                ft.Text("Activo no encontrado")
+            ],
+        )

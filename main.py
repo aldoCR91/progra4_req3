@@ -30,8 +30,9 @@ def main(page: ft.Page):
             page.views.append(create_update_view(app_bar, menubar))
         elif page.route == "/delete":
             page.views.append(create_delete_view(app_bar, menubar))
-        elif page.route == "/detail":
-            page.views.append(create_detail_view(app_bar, menubar))
+        elif page.route.startswith("/detail"):
+            identificador = page.route.split("/")[-1]
+            page.views.append(create_detail_view(app_bar, menubar, activos, identificador))
         
         page.update()
 

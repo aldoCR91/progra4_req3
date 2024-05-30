@@ -11,7 +11,7 @@ columns = [
     ft.DataColumn(ft.Text("Vida util")),
     ft.DataColumn(ft.Text("Detalles")),
 ]
-
+ 
 data_table = ft.DataTable(columns=columns, rows=[])
 
 def detalles_click(e):
@@ -44,7 +44,7 @@ def detalles_click(e):
 
     _data_table = ft.DataTable(columns=_columns, rows=_rows)
 
-def actualizar_tabla():
+def actualizar_tabla(page):
     global activos
 
     data_table.rows.clear()
@@ -58,7 +58,8 @@ def actualizar_tabla():
                 ft.DataCell(ft.Text(item["valor"])),
                 ft.DataCell(ft.Text(item["valor_res"])),
                 ft.DataCell(ft.Text(item["vida_util"])),
-                ft.DataCell(ft.ElevatedButton(text="Detalles", on_click=detalles_click, data=item)),
+                #ft.DataCell(ft.ElevatedButton(text="Detalles", on_click=lambda e, id=item["identificador"]: page.go("/detail"), data=item)),
+                ft.DataCell(ft.ElevatedButton(text="Detalles", on_click=lambda e, id=item["identificador"]: page.go(f"/detail/{id}"), data=item)),
             ]
         )
         data_table.rows.append(row)
@@ -81,5 +82,5 @@ def agregar_activo(tf_identificador, tf_nombre, tf_responsable, tf_valor, tf_val
     tf_valor_res.value = ""
     tf_vida_util.value = ""
     page.show_snack_bar(ft.SnackBar(content=ft.Text("Activo agregado!!!")))
-    actualizar_tabla()
+    actualizar_tabla(page=page)
     page.update()
