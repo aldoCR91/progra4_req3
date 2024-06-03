@@ -9,6 +9,9 @@ def main(page: ft.Page):
     appbar_text_ref = ft.Ref[ft.Text]()
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.window_full_screen = False
+    page.window_width = 500
+
 
     app_bar = ft.AppBar(
         title=ft.Text("Control de activos", ref=appbar_text_ref, color=ft.colors.WHITE),
