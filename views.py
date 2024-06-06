@@ -8,6 +8,7 @@ tf_valor = ft.TextField(label="Valor monetario", width=400, keyboard_type=ft.Key
 tf_valor_res = ft.TextField(label="Valor de rescate", width=400, keyboard_type=ft.KeyboardType.NUMBER, value="")
 tf_vida_util = ft.TextField(label="Vida util (years)", width=400, keyboard_type=ft.KeyboardType.NUMBER, value="")
 
+
 def create_main_view(app_bar, menubar, activos):
     return ft.View(
         "/",
@@ -63,6 +64,16 @@ def create_delete_view(app_bar, menubar):
             app_bar,
             ft.Row([menubar]),
             ft.Text("delete"),
+        ],
+    )
+    
+def all_calc_view(app_bar, menubar):
+    return ft.View(
+        "/all_calcs",
+        [
+          app_bar,
+          ft.Row([menubar]),
+          ft.Text("all calc view")
         ],
     )
 
@@ -207,16 +218,7 @@ def create_detail_view(app_bar, menubar, data, identificador):
     lv1.controls.append(ft.Divider())
     lv1.controls.append(ft.DataTable(columns=columns2,rows=rows2 ))
     
-    
-
-    
-
-    
-
-
-
-    
-    
+      
     if activo:
         return ft.View(
             "/detail",
@@ -231,12 +233,7 @@ def create_detail_view(app_bar, menubar, data, identificador):
                 ft.Text(f"Responsable:            {responsable}"),
                 ft.Divider(),
                 lv1,
-                #ft.DataTable(columns=columns, rows=rows),
-                
-                
-                
-                
-                
+                #ft.DataTable(columns=columns, rows=rows),    
             ],
             auto_scroll=True,
         )

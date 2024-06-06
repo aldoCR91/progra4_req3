@@ -46,9 +46,7 @@ def detalles_click(e):
 
 def actualizar_tabla(page):
     global activos
-
     data_table.rows.clear()
-
     for item in activos:
         row = ft.DataRow(
             cells=[

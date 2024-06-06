@@ -8,8 +8,8 @@ def handle_menu_item_click(e, page, appbar_text_ref):
         page.go("/create")
     if e.control.content.value == "Ver Activos":
         page.go("/read")
-    if e.control.content.value == "Modificar":
-        page.go("/update")
+    if e.control.content.value == "Calcular todas las depreciaciones":
+        page.go("/all_calc")
     if e.control.content.value == "Eliminar":
         page.go("/delete")
     page.update()
@@ -42,7 +42,7 @@ def create_menubar(appbar_text_ref, page):
                         on_click=lambda e: handle_menu_item_click(e, page, appbar_text_ref)
                     ),
                     ft.MenuItemButton(
-                        content=ft.Text("Modificar"),
+                        content=ft.Text("Calcular todas las depreciaciones"),
                         leading=ft.Icon(ft.icons.EDIT),
                         style=ft.ButtonStyle(bgcolor={ft.MaterialState.HOVERED: ft.colors.GREEN_100}),
                         on_click=lambda e: handle_menu_item_click(e, page, appbar_text_ref)
