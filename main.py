@@ -2,6 +2,7 @@ import flet as ft
 from activos_data import activos, agregar_activo, actualizar_tabla
 from menu import create_menubar
 from views import create_main_view, create_create_view, create_read_view, create_update_view, create_delete_view, create_detail_view, all_calc_view
+from view.botellas_view import create_botellas_view
 
 def main(page: ft.Page):
     page.title = "Edwards LTDA"
@@ -21,9 +22,11 @@ def main(page: ft.Page):
 
     menubar = create_menubar(appbar_text_ref, page)
 
+
     def route_change(route):
         page.views.clear()
-        page.views.append(create_main_view(app_bar, menubar, activos))
+        page.views.append(create_main_view(app_bar, menubar, activos ))
+        
         
         if page.route == "/create":
             page.views.append(create_create_view(app_bar, menubar, page))
@@ -32,7 +35,7 @@ def main(page: ft.Page):
         elif page.route == "/update":
             page.views.append(create_update_view(app_bar, menubar))
         elif page.route == "/delete":
-            page.views.append(create_delete_view(app_bar, menubar))
+            page.views.append(create_botellas_view(app_bar, menubar))
         elif page.route == "/all_calc":
             page.views.append(all_calc_view(app_bar, menubar))
         elif page.route.startswith("/detail"):
