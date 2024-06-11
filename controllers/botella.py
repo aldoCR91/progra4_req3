@@ -1,8 +1,5 @@
 
-
-
 from models.botella import Botella
-
 
 class Botella_Controller:
     def __init__(self) -> None:

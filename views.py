@@ -1,4 +1,6 @@
+import threading
 import flet as ft
+from time import sleep
 from activos_data import data_table, agregar_activo
 
 tf_identificador = ft.TextField(label="Identificador", width=400, keyboard_type=ft.KeyboardType.NUMBER, value="")
@@ -67,15 +69,185 @@ def create_delete_view(app_bar, menubar):
         ],
     )
     
-def all_calc_view(app_bar, menubar):
+def generar_tablas(app_bar, menubar, activo):
+    nombre = activo['nombre']
+    responsable = activo['responsable']
+    valor = int(activo['valor'])
+    valor_res = int(activo['valor_res'])
+    vida_util = int(activo['vida_util'])
+    
+    #Tabla de linea recta
+    columns=[
+        ft.DataColumn(ft.Text("Periodo")),
+        ft.DataColumn(ft.Text("Valor a depreciar")),
+        ft.DataColumn(ft.Text("Factor")),
+        ft.DataColumn(ft.Text("Depreciacion anual")),
+        ft.DataColumn(ft.Text("Depreciacion acumulada")),
+        ft.DataColumn(ft.Text("Valor en libros")),
+    ]
+    columns2=[
+        ft.DataColumn(ft.Text("Periodo")),
+        ft.DataColumn(ft.Text("Valor a depreciar")),
+        ft.DataColumn(ft.Text("Factor")),
+        ft.DataColumn(ft.Text("Denominador")),
+        ft.DataColumn(ft.Text("Depreciacion anual")),
+        ft.DataColumn(ft.Text("Depreciacion acumulada")),
+        ft.DataColumn(ft.Text("Valor en libros")),
+    ]
+    
+    rows = []
+    i = 0
+    
+    while i <= int(activo['vida_util']):
+        if i == 0:
+            row = ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(f"{i}")),   # Periodo
+                    ft.DataCell(ft.Text(f"{valor - valor_res}")), # Valor a depreciar
+                    ft.DataCell(ft.Text("-")), # Factor
+                    ft.DataCell(ft.Text("-")), #Depreciacion anual
+                    ft.DataCell(ft.Text("-")), #Depreciacion acumulada
+                    ft.DataCell(ft.Text( f"{int((valor - valor_res) - (i * ((valor - valor_res)/vida_util) ))}")), # Valor en libros
+                ]
+            )
+        if i > 0:
+            row = ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(f"{i}")),   # Periodo
+                    ft.DataCell(ft.Text(f"{valor - valor_res}")), # Valor a depreciar
+                    ft.DataCell(ft.Text(f"{int((100 / vida_util))}%")), # Factor
+                    ft.DataCell(ft.Text(f"{int((valor - valor_res)/(vida_util))}")), #Depreciacion anual
+                    ft.DataCell(ft.Text(f"{int( i * ( (valor - valor_res)/10))}")), #Depreciacion acumulada
+                    ft.DataCell(ft.Text( f"{int((valor - valor_res) - (i * ((valor - valor_res)/vida_util) ))}")), # Valor en libros
+                ]
+            )
+        if i == vida_util:
+            row = ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(f"{i}")),   # Periodo
+                    ft.DataCell(ft.Text(f"{valor - valor_res}")), # Valor a depreciar
+                    ft.DataCell(ft.Text(f"{int((100 / vida_util))}%")), # Factor
+                    ft.DataCell(ft.Text(f"{int((valor - valor_res)/(vida_util))}")), #Depreciacion anual
+                    ft.DataCell(ft.Text(f"{int( i * ( (valor - valor_res)/10))}")), #Depreciacion acumulada
+                    ft.DataCell(ft.Text("-")), # Valor en libros
+                ]
+        )
+        rows.append(row)
+        i = i + 1
+            
+    def denominador(vida_util:int):
+        vida = vida_util
+        fac = 0
+        while vida > 0:
+            fac = fac + vida
+            vida = vida - 1
+        return fac
+        
+    _periodo = 0
+    _valor_adepreciar = valor - valor_res
+    _factor = vida_util
+    _denominador = denominador(vida_util)
+    _dep_anual = 0
+    _dep_acumulada = 0
+    _valor_libros = _valor_adepreciar
+    print(f"valor en libros: {_valor_libros}")
+
+    i = vida_util
+    rows2 = []
+            
+    while i >= 0:
+    
+        if _periodo == 0:
+            _valor_libros = _valor_adepreciar
+            row = ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(f"{_periodo}")),   # Periodo
+                    ft.DataCell(ft.Text(f"{_valor_adepreciar}")), # Valor a depreciar
+                    ft.DataCell(ft.Text("-")), # Factor
+                    ft.DataCell(ft.Text("-")), # Denominador
+                    ft.DataCell(ft.Text("-")), #Depreciacion anual
+                    ft.DataCell(ft.Text("-")), #Depreciacion acumulada
+                    ft.DataCell(ft.Text( f"{_valor_libros}")), # Valor en libros
+                ]
+            )
+        if _periodo > 0:
+            #_dep_anual = (_valor_adepreciar * 1)
+            _dep_anual = round((_valor_adepreciar * _factor)/_denominador)
+            _dep_acumulada = _dep_acumulada + _dep_anual
+            _valor_libros = _valor_adepreciar - _dep_acumulada
+            if _periodo == 10:
+                _valor_libros = "0"
+            row = ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text(f"{_periodo}")),   # Periodo
+                    ft.DataCell(ft.Text(f"{_valor_adepreciar}")), # Valor a depreciar
+                    ft.DataCell(ft.Text(f"{int(_factor)}%")), # Factor
+                    ft.DataCell(ft.Text(f"{int(_denominador)}%")), # Denominador
+                    ft.DataCell(ft.Text(f"{int(_dep_anual)}")), #Depreciacion anual
+                    ft.DataCell(ft.Text(f"{int(_dep_acumulada )}")), #Depreciacion acumulada
+                    ft.DataCell(ft.Text( f"{int(_valor_libros)}")), # Valor en libros
+                ]
+            )
+            _factor = _factor - 1
+
+        rows2.append(row)
+        _periodo = _periodo + 1
+        i = i - 1
+       
+    lv1 = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
+    lv1.controls.append(ft.Text(f"Activo: {activo['identificador']} - Nombre: {activo['nombre']}", size=14, weight=ft.FontWeight.BOLD))
+    lv1.controls.append(ft.Text("Depreciacion Linea Recta", size=14, weight=ft.FontWeight.BOLD))
+    lv1.controls.append(ft.Divider())
+    lv1.controls.append(ft.DataTable(columns=columns, rows=rows))
+    lv1.controls.append(ft.Divider())
+    lv1.controls.append(ft.Text("Depreciacion Suma de digitos", size=14, weight=ft.FontWeight.BOLD))
+    lv1.controls.append(ft.Divider())
+    lv1.controls.append(ft.DataTable(columns=columns2,rows=rows2 ))
+    lv1.controls.append(ft.Divider())
+       
+    return lv1
+
+class Hilo(threading.Thread):
+    def __init__(self, num):
+        threading.Thread.__init__(self)
+        self.num = num
+        print(int(self.num['identificador']))
+        
+    def run(self,app_bar,menubar,activo):
+        tablas = generar_tablas(app_bar,menubar,activo)
+        sleep(int(activo['identificador']))
+        print(f"Proceso calculado con el hilo {self.num['identificador']}")
+        return tablas
+    
+def all_calc_view(app_bar, menubar, activos):
+    
+    
+    
+    x = []
+    lv1 = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
+    
+    for i in activos:
+        #tablas = generar_tablas(app_bar, menubar, i)
+        hilo = Hilo(i)
+        tablas = hilo.run(app_bar,menubar,i)
+        lv1.controls.append(tablas)
+        
     return ft.View(
-        "/all_calcs",
-        [
-          app_bar,
-          ft.Row([menubar]),
-          ft.Text("all calc view")
+        "/detail",
+        controls=[
+            app_bar,
+            ft.Row([menubar]),
+            ft.Text("Edwards LTDA", size=14, weight=ft.FontWeight.BOLD),
+            ft.Divider(),
+            lv1,
+            #ft.DataTable(columns=columns, rows=rows),    
         ],
+        auto_scroll=True,
     )
+
+
+
+
 
 def create_detail_view(app_bar, menubar, data, identificador):
     # Buscar activo
@@ -117,9 +289,9 @@ def create_detail_view(app_bar, menubar, data, identificador):
                 cells=[
                     ft.DataCell(ft.Text(f"{i}")),   # Periodo
                     ft.DataCell(ft.Text(f"{valor - valor_res}")), # Valor a depreciar
-                    ft.DataCell(ft.Text(f"-")), # Factor
-                    ft.DataCell(ft.Text(f"-")), #Depreciacion anual
-                    ft.DataCell(ft.Text(f"-")), #Depreciacion acumulada
+                    ft.DataCell(ft.Text("-")), # Factor
+                    ft.DataCell(ft.Text("-")), #Depreciacion anual
+                    ft.DataCell(ft.Text("-")), #Depreciacion acumulada
                     ft.DataCell(ft.Text( f"{int((valor - valor_res) - (i * ((valor - valor_res)/vida_util) ))}")), # Valor en libros
                 ]
             )
@@ -176,10 +348,10 @@ def create_detail_view(app_bar, menubar, data, identificador):
                 cells=[
                     ft.DataCell(ft.Text(f"{_periodo}")),   # Periodo
                     ft.DataCell(ft.Text(f"{_valor_adepreciar}")), # Valor a depreciar
-                    ft.DataCell(ft.Text(f"-")), # Factor
-                    ft.DataCell(ft.Text(f"-")), # Denominador
-                    ft.DataCell(ft.Text(f"-")), #Depreciacion anual
-                    ft.DataCell(ft.Text(f"-")), #Depreciacion acumulada
+                    ft.DataCell(ft.Text("-")), # Factor
+                    ft.DataCell(ft.Text("-")), # Denominador
+                    ft.DataCell(ft.Text("-")), #Depreciacion anual
+                    ft.DataCell(ft.Text("-")), #Depreciacion acumulada
                     ft.DataCell(ft.Text( f"{_valor_libros}")), # Valor en libros
                 ]
             )
@@ -208,12 +380,12 @@ def create_detail_view(app_bar, menubar, data, identificador):
         i = i - 1
         
     lv1 = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
-    lv1.controls.append(ft.Text(f"Edwards LTDA", size=14, weight=ft.FontWeight.BOLD))
+    lv1.controls.append(ft.Text("Edwards LTDA", size=14, weight=ft.FontWeight.BOLD))
     lv1.controls.append(ft.Text("Depreciacion Linea Recta", size=14, weight=ft.FontWeight.BOLD))
     lv1.controls.append(ft.Divider())
     lv1.controls.append(ft.DataTable(columns=columns, rows=rows))
     lv1.controls.append(ft.Divider())
-    lv1.controls.append(ft.Text(f"Edwards LTDA", size=14, weight=ft.FontWeight.BOLD))
+    lv1.controls.append(ft.Text("Edwards LTDA", size=14, weight=ft.FontWeight.BOLD))
     lv1.controls.append(ft.Text("Depreciacion Suma de digitos", size=14, weight=ft.FontWeight.BOLD))
     lv1.controls.append(ft.Divider())
     lv1.controls.append(ft.DataTable(columns=columns2,rows=rows2 ))
@@ -225,7 +397,7 @@ def create_detail_view(app_bar, menubar, data, identificador):
             controls=[
                 app_bar,
                 ft.Row([menubar]),
-                ft.Text(f"Edwards LTDA", size=14, weight=ft.FontWeight.BOLD),
+                ft.Text("Edwards LTDA", size=14, weight=ft.FontWeight.BOLD),
                 ft.Divider(),
                 ft.Text(f"{nombre}:                 {valor}"),
                 ft.Text(f"Valor de rescate:     {valor_res}"),

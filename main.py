@@ -37,7 +37,7 @@ def main(page: ft.Page):
         elif page.route == "/delete":
             page.views.append(create_botellas_view(app_bar, menubar))
         elif page.route == "/all_calc":
-            page.views.append(all_calc_view(app_bar, menubar))
+            page.views.append(all_calc_view(app_bar, menubar, activos))
         elif page.route.startswith("/detail"):
             identificador = page.route.split("/")[-1]
             page.views.append(create_detail_view(app_bar, menubar, activos, identificador))
